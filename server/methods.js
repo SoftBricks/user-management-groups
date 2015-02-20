@@ -1,5 +1,8 @@
 if (Meteor.isServer) {
     Meteor.methods({
+        //TODO Add teams also to the projects ??
+
+
         /*
          * checks if a given groupname is already existing in the database
          * @param String groupname
@@ -117,6 +120,29 @@ if (Meteor.isServer) {
                 if (groupId === "")
                     throw new Meteor.Error("group", "Group id was not specified");
             }
+        },
+        /*
+         * remove a sub group from a group
+         * @param String groupId
+         * @param String parentGroupId
+         * @return Boolean
+         *      true = removed subgroup successfull
+         *      error = remove subgroup failed
+         */
+        removeSubGroup: function (groupId, parentGroupId) {
+            //TODO
+            //if (groupId && parentGroupId) {
+            //    Groups.update({_id: grouId}, {
+            //        $set: {
+            //            parentGroup: parentGroupId
+            //        }
+            //    });
+            //} else {
+            //    if (parentGroupId === "")
+            //        throw new Meteor.error("group", "Parent group id was not specified!");
+            //    if (groupId === "")
+            //        throw new Meteor.Error("group", "Group id was not specified");
+            //}
         },
         /*
          * removes a group
