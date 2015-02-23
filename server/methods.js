@@ -84,7 +84,8 @@ if (Meteor.isServer) {
                     groupname: doc.groupname,
                     parentGroup: doc.parentGroup,
                     leader: doc.leader,
-                    //agency: doc.agency
+                    projects: doc.projects,
+                    agency: doc.agency
                 });
                 if (!group)
                     throw new Meteor.error("group", "Create group failed!");
@@ -94,6 +95,36 @@ if (Meteor.isServer) {
             }
 
             return true;
+        },
+        /*
+         * updates a group
+         * @param Object doc
+         * @return Boolean
+         *      true = edit group successfull
+         *      error = edit group failed
+         */
+        updateGroup: function (doc, mod, documentId) {
+            //TODO check rights
+            if (true) {
+                var group = Groups.update({
+                        _id: documentId
+                    }, {
+                        $set: {
+                            groupname: doc.groupname,
+                            parentGroup: doc.parentGroup,
+                            leader: doc.leader,
+                            projects: doc.projects,
+                            agency: doc.agency
+                        }
+                    }
+                );
+                if (group != 1)
+                    throw new Meteor.Error("group", "updating the group failed");
+
+                return true;
+            }else{
+                throw new Meteor.Error("group", "You have no rights to edit a group");
+            }
         },
         /*
          * assigns a sub group to a group
@@ -148,11 +179,15 @@ if (Meteor.isServer) {
          */
         removeGroup: function (groupId) {
             if (groupId) {
-                Groups.remove({_id: groupId});
+                var group = Groups.remove({_id: groupId});
+                //TODO Remove group id from users
+                //Meteor.users.update({
+                //    $pull: {groups: groupId}
+                //});
 
-                Meteor.users.update({
-                    $pull: {groups: groupId}
-                });
+                return true;
+            }else{
+                throw new Meteor.error("groups", "No group id was specified while removing group");
             }
         },
 

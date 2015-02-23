@@ -1,12 +1,9 @@
 Groups = new Mongo.Collection('groups');
 
-//Groups schema
-Schema = {};
-//SimpleSchema.debug = true;
 SimpleSchema.messages({
     "groupnameExisting": "Groupname already exists"
 });
-var groupSchema = {
+SchemaPlain.group = {
     groupname: {
         type: String,
         label: "Group name",
@@ -37,7 +34,8 @@ var groupSchema = {
         label: "Leader",
         optional: true,
         custom: function () {
-            //TODO Search user as leader
+            if(Meteor.isClient)
+                LeaderSearch.search(this.value);
         }
     },
     //agency: {
@@ -53,7 +51,21 @@ var groupSchema = {
     parentGroup: {
         type: String,
         label: "ParentGroup",
-        optional: true
+        optional: true,
+        custom: function () {
+            if(Meteor.isClient)
+                SubGroupSearch.search(this.value);
+        }
+    },
+    users: {
+        type: [String],
+        label: "Users in group",
+        optional: true,
+        custom: function () {
+            console.log("checking user");
+            if(Meteor.isClient)
+                UserSearch.search(this.value);
+        }
     }
     //'projects.$.projectId': {
     //    type: String,
@@ -65,11 +77,11 @@ var groupSchema = {
     //}
 };
 
-if(typeof GroupExtender != "undefined" && GroupExtender.extendSchema)
-    _.merge(groupSchema, GroupExtender.extendSchema);
+Meteor.startup(function(){
+    Schema.group = new SimpleSchema(SchemaPlain.group);
+    Groups.attachSchema(Schema.group);
 
-Schema.groupSchema = new SimpleSchema(groupSchema);
-Groups.attachSchema(Schema.groupSchema);
+});
 
 if (Meteor.isServer) {
     Groups._ensureIndex({
