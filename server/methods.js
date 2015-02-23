@@ -1,4 +1,61 @@
 if (Meteor.isServer) {
+    /*
+     * Adds a user to a group
+     * @param String userId
+     * @param String useremail
+     * @param String groupId
+     * @return Boolean
+     *      true = user was added
+     *      false = user was not added
+     */
+    var addUserToGroup = function (userId, useremail, groupId) {
+        if(!userId && !useremail)
+            throw new Meteor.error("groups", "You have to specify userid or useremail");
+        if(!groupId)
+            throw new Meteor.error("groups", "You did not specify a groupId");
+
+        var identifier;
+        if(useremail)
+            identifier = {'emails.0.address':useremail};
+        if(userId)
+            identifier = {_id:userId};
+
+        var user = Meteor.users.update(identifier,
+            {
+                $addToSet: {
+                    'profile.groups': groupId
+                }
+            });
+        if(user == 1)
+            return true;
+    };
+    /*
+     * removes a user from a group
+     * @param String groupId
+     * @param String userId || email
+     * @return Boolean
+     *      true = removed user from group successfull
+     *      error = removing user from group failed
+     */
+    removeUserFromGroup = function (groupId, userId, email) {
+        if (groupId) {
+            var update = {$pull: {groups: groupId}}
+            var user;
+
+            if (userId != "" && userId != undefined) {
+                var user = Meteor.users.update({_id: userId}, update);
+            } else if (email != "" && userId != undefined) {
+                var user = Meteor.users.update({'emails.0.address': email}, update);
+            }
+
+            if (!user)
+                throw new Meteor.error("user", "Found no user!");
+        } else {
+            throw new Meteor.error("group", "Found no group with specified groupid!");
+        }
+        return true;
+    };
+
     Meteor.methods({
         //TODO Add teams also to the projects ??
 
@@ -17,59 +74,34 @@ if (Meteor.isServer) {
 
             return false;
         },
-        /*
-         * assigns a user to a group
-         * @param String groupId
-         * @param String userId
-         * @param String email
-         * @return Boolean
-         *      true = assigned user to group successfull
-         *      error = assigning user to group failed
-         */
-        assignUserToGroup: function (groupId, userId, email) {
-            if (groupId) {
-                var update = {$addToSet: {groups: groupId}};
-                var user;
+        ///*
+        // * assigns a user to a group
+        // * @param String groupId
+        // * @param String userId
+        // * @param String email
+        // * @return Boolean
+        // *      true = assigned user to group successfull
+        // *      error = assigning user to group failed
+        // */
+        //assignUserToGroup: function (groupId, userId, email) {
+        //    if (groupId) {
+        //        var update = {$addToSet: {groups: groupId}};
+        //        var user;
+        //
+        //        if (userId != "" && userId != undefined) {
+        //            var user = Meteor.users.update({_id: userId}, update);
+        //        } else if (email != "" && userId != undefined) {
+        //            var user = Meteor.users.update({'emails.0.address': email}, update);
+        //        }
+        //
+        //        if (!user)
+        //            throw new Meteor.error("user", "Found no user!");
+        //    } else {
+        //        throw new Meteor.error("group", "Found no group with specified groupid!");
+        //    }
+        //    return true;
+        //},
 
-                if (userId != "" && userId != undefined) {
-                    var user = Meteor.users.update({_id: userId}, update);
-                } else if (email != "" && userId != undefined) {
-                    var user = Meteor.users.update({'emails.0.address': email}, update);
-                }
-
-                if (!user)
-                    throw new Meteor.error("user", "Found no user!");
-            } else {
-                throw new Meteor.error("group", "Found no group with specified groupid!");
-            }
-            return true;
-        },
-        /*
-         * removes a user from a group
-         * @param String groupId
-         * @param String userId || email
-         * @return Boolean
-         *      true = removed user from group successfull
-         *      error = removing user from group failed
-         */
-        removeUserFromGroup: function (groupId, userId, email) {
-            if (groupId) {
-                var update = {$pull: {groups: groupId}}
-                var user;
-
-                if (userId != "" && userId != undefined) {
-                    var user = Meteor.users.update({_id: userId}, update);
-                } else if (email != "" && userId != undefined) {
-                    var user = Meteor.users.update({'emails.0.address': email}, update);
-                }
-
-                if (!user)
-                    throw new Meteor.error("user", "Found no user!");
-            } else {
-                throw new Meteor.error("group", "Found no group with specified groupid!");
-            }
-            return true;
-        },
         /*
          * creates a group
          * @param Object doc
@@ -77,7 +109,7 @@ if (Meteor.isServer) {
          *      true = created group successfull
          *      error = creating group failed
          */
-        createGroup: function (doc) {
+        createGroup: function (doc, mod, documentId) {
             //TODO check if project exists
             if (doc.groupname) {
                 var group = Groups.insert({
@@ -85,7 +117,11 @@ if (Meteor.isServer) {
                     parentGroup: doc.parentGroup,
                     leader: doc.leader,
                     projects: doc.projects,
-                    agency: doc.agency
+                    agency: doc.agency,
+                    users: doc.users
+                });
+                _.each(doc.users, function (useremail){
+                    addUserToGroup("",useremail, documentId);
                 });
                 if (!group)
                     throw new Meteor.error("group", "Create group failed!");
@@ -114,10 +150,14 @@ if (Meteor.isServer) {
                             parentGroup: doc.parentGroup,
                             leader: doc.leader,
                             projects: doc.projects,
-                            agency: doc.agency
+                            agency: doc.agency,
+                            users: doc.users
                         }
                     }
                 );
+                _.each(doc.users, function (useremail){
+                    addUserToGroup("",useremail, documentId);
+                });
                 if (group != 1)
                     throw new Meteor.Error("group", "updating the group failed");
 
