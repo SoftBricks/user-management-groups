@@ -28,8 +28,7 @@ if (Meteor.isServer) {
          */
         assignUserToGroup: function (groupId, userId, email) {
             if (groupId) {
-                //TODO Check if group exists -> checkGroupnameExisting
-                var update = {$addToSet: {groups: groupId}}
+                var update = {$addToSet: {groups: groupId}};
                 var user;
 
                 if (userId != "" && userId != undefined) {
@@ -73,28 +72,25 @@ if (Meteor.isServer) {
         },
         /*
          * creates a group
-         * @param String name
-         * @param String projectId
-         * @param String parentGroup
+         * @param Object doc
          * @return Boolean
          *      true = created group successfull
          *      error = creating group failed
          */
-        createGroup: function (name, projectId, parentGroup) {
+        createGroup: function (doc) {
             //TODO check if project exists
-            if (name && projectId) {
+            if (doc.groupname) {
                 var group = Groups.insert({
-                    name: name,
-                    projectId: projectId,
-                    parentGroup: parentGroup
+                    groupname: doc.groupname,
+                    parentGroup: doc.parentGroup,
+                    leader: doc.leader,
+                    //agency: doc.agency
                 });
                 if (!group)
                     throw new Meteor.error("group", "Create group failed!");
             } else {
                 if (name === "")
                     throw new Meteor.error("group", "Name was not specified!");
-                if (projectId === "")
-                    throw new Meteor.Error("group", "Project id was not specified");
             }
 
             return true;
@@ -130,19 +126,18 @@ if (Meteor.isServer) {
          *      error = remove subgroup failed
          */
         removeSubGroup: function (groupId, parentGroupId) {
-            //TODO
-            //if (groupId && parentGroupId) {
-            //    Groups.update({_id: grouId}, {
-            //        $set: {
-            //            parentGroup: parentGroupId
-            //        }
-            //    });
-            //} else {
-            //    if (parentGroupId === "")
-            //        throw new Meteor.error("group", "Parent group id was not specified!");
-            //    if (groupId === "")
-            //        throw new Meteor.Error("group", "Group id was not specified");
-            //}
+            if (groupId && parentGroupId) {
+                Groups.update({_id: grouId}, {
+                    $set: {
+                        parentGroup: null
+                    }
+                });
+            } else {
+                if (parentGroupId === "")
+                    throw new Meteor.error("group", "Parent group id was not specified!");
+                if (groupId === "")
+                    throw new Meteor.Error("group", "Group id was not specified");
+            }
         },
         /*
          * removes a group

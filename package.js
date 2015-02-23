@@ -20,8 +20,11 @@ Package.onUse(function(api) {
   api.imply('aldeed:simple-schema');
   api.use(['aldeed:collection2@2.3.2']);
   api.imply('aldeed:collection2');
+  api.use('stevezhu:lodash@1.0.2');
+  api.imply('stevezhu:lodash');
 
   api.addFiles(['lib/schemaGroup.js','collections/groups.js'], ['client','server']);
+  api.addFiles(['server/publications.js'], 'server');
   api.addFiles(['server/methods.js'], 'server');
 
   if (api.export)

@@ -1,11 +1,16 @@
 Groups = new Mongo.Collection('groups');
 
 //Groups schema
-
-GroupSchema = new SimpleSchema({
+Schema = {};
+//SimpleSchema.debug = true;
+SimpleSchema.messages({
+    "groupnameExisting": "Groupname already exists"
+});
+var groupSchema = {
     groupname: {
         type: String,
         label: "Group name",
+        unique:true,
         custom: function () {
             //TODO testing?
             if (Meteor.isClient) {
@@ -17,9 +22,9 @@ GroupSchema = new SimpleSchema({
                 if (Meteor.isClient && this.isSet) {
                     Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
                         if (result === true) {
-                            Groups.simpleSchema().namedContext("createGroupForm").addInvalidKeys([{
+                            Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
                                 name: 'groupname',
-                                type: 'notUniqueGroupname'
+                                type: 'groupnameExisting'
                             }]);
                         }
                     });
@@ -28,26 +33,43 @@ GroupSchema = new SimpleSchema({
         }
     },
     leader: {
-        type: String
+        type: String,
+        label: "Leader",
+        optional: true,
+        custom: function () {
+            //TODO Search user as leader
+        }
     },
-    agency: {
-        type: String
-    },
-    projects: {
-        type: [Object]
-    },
+    //agency: {
+    //    type: String,
+    //    label: "Agency",
+    //    optional: true
+    //},
+    //projects: {
+    //    type: [Object],
+    //    label: "Projects",
+    //    optional: true
+    //},
     parentGroup: {
-        type: String
-    },
-    'projects.$.projectId': {
-        type: String
-    },
-    'projects.$.mayShare': {
-        type: Boolean
+        type: String,
+        label: "ParentGroup",
+        optional: true
     }
-});
+    //'projects.$.projectId': {
+    //    type: String,
+    //    optional:true
+    //},
+    //'projects.$.mayShare': {
+    //    type: Boolean,
+    //    optional:true
+    //}
+};
 
-Groups.attachSchema(GroupSchema);
+if(typeof GroupExtender != "undefined" && GroupExtender.extendSchema)
+    _.merge(groupSchema, GroupExtender.extendSchema);
+
+Schema.groupSchema = new SimpleSchema(groupSchema);
+Groups.attachSchema(Schema.groupSchema);
 
 if (Meteor.isServer) {
     Groups._ensureIndex({
@@ -56,7 +78,7 @@ if (Meteor.isServer) {
     Groups._ensureIndex({
         'agency': 1
     });
-    Groups._ensureIndex({
-        'projects.$.projectId': 1
-    });
+    //Groups._ensureIndex({
+    //    'projects.$.projectId': 1
+    //});
 }
