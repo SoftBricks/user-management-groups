@@ -58,14 +58,17 @@ SchemaPlain.group = {
         }
     },
     users: {
-        type: [String],
+        type: [Object],
         label: "Users in group",
-        optional: true,
-        custom: function () {
-            console.log("checking user");
-            if(Meteor.isClient)
-                UserSearch.search(this.value);
-        }
+        optional: true
+    },
+    'users.$.id': {
+        type: String,
+        label: "User id"
+    },
+    'users.$.useremail':{
+        type: String,
+        label: "Useremail"
     }
     //'projects.$.projectId': {
     //    type: String,
