@@ -35,8 +35,15 @@ SchemaPlain.group = {
         label: "Leader",
         optional: true,
         custom: function () {
-            if(Meteor.isClient)
+            if(Meteor.isClient){
+                var user = Meteor.users.findOne({
+                    'emails.address': this.value
+                });
+                if(user){
+                    return;
+                }
                 LeaderSearch.search(this.value);
+            }
         }
     },
     parentGroup: {
@@ -44,8 +51,15 @@ SchemaPlain.group = {
         label: "ParentGroup",
         optional: true,
         custom: function () {
-            if(Meteor.isClient)
+            if(Meteor.isClient){
+                var group = Groups.findOne({
+                    groupname: this.value
+                });
+                if(group){
+                    return;
+                }
                 SubGroupSearch.search(this.value);
+            }
 
             Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
                 if (result !== true) {
