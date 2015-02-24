@@ -1,7 +1,8 @@
 Groups = new Mongo.Collection('groups');
 
 SimpleSchema.messages({
-    "groupnameExisting": "Groupname already exists"
+    "groupnameExisting": "Groupname already exists",
+    "groupnameNotExisting": "Group does not exist"
 });
 SchemaPlain.group = {
     groupname: {
@@ -38,16 +39,6 @@ SchemaPlain.group = {
                 LeaderSearch.search(this.value);
         }
     },
-    //agency: {
-    //    type: String,
-    //    label: "Agency",
-    //    optional: true
-    //},
-    //projects: {
-    //    type: [Object],
-    //    label: "Projects",
-    //    optional: true
-    //},
     parentGroup: {
         type: String,
         label: "ParentGroup",
@@ -55,6 +46,15 @@ SchemaPlain.group = {
         custom: function () {
             if(Meteor.isClient)
                 SubGroupSearch.search(this.value);
+
+            Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
+                if (result !== true) {
+                    Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
+                        name: 'parentGroup',
+                        type: 'groupnameNotExisting'
+                    }]);
+                }
+            });
         }
     },
     users: {
@@ -65,19 +65,7 @@ SchemaPlain.group = {
     'users.$.id': {
         type: String,
         label: "User id"
-    },
-    'users.$.useremail':{
-        type: String,
-        label: "Useremail"
     }
-    //'projects.$.projectId': {
-    //    type: String,
-    //    optional:true
-    //},
-    //'projects.$.mayShare': {
-    //    type: Boolean,
-    //    optional:true
-    //}
 };
 
 Meteor.startup(function(){
@@ -91,9 +79,6 @@ if (Meteor.isServer) {
         'groupname': 1
     });
     Groups._ensureIndex({
-        'agency': 1
+        'parentGroup': 1
     });
-    //Groups._ensureIndex({
-    //    'projects.$.projectId': 1
-    //});
 }
