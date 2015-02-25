@@ -12,20 +12,20 @@ SchemaPlain.group = {
         custom: function () {
             //TODO testing?
             if (Meteor.isClient) {
-                var groupId = Router.current().getParams().groupId;
+                var groupId = Router.current().params.groupId;
                 if (groupId)
-                    var currentGroupname = Groups.findOne({_id: groupId}).groupName;
-            }
-            if (currentGroupname != this.value || !currentGroupname) {
-                if (Meteor.isClient && this.isSet) {
-                    Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
-                        if (result === true) {
-                            Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
-                                name: 'groupname',
-                                type: 'groupnameExisting'
-                            }]);
-                        }
-                    });
+                    var currentGroupname = Groups.findOne({_id: groupId}).groupname;
+                if (currentGroupname != this.value || typeof currentGroupname === 'undefined') {
+                    if (Meteor.isClient && this.isSet) {
+                        Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
+                            if (result === true) {
+                                Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
+                                    name: 'groupname',
+                                    type: 'groupnameExisting'
+                                }]);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -46,15 +46,16 @@ SchemaPlain.group = {
         custom: function () {
             if(Meteor.isClient)
                 SubGroupSearch.search(this.value);
-
-            Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
-                if (result !== true) {
-                    Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
-                        name: 'parentGroup',
-                        type: 'groupnameNotExisting'
-                    }]);
-                }
-            });
+            if(this.value != "" && typeof this.value !== 'undefined'){
+                Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
+                    if (result !== true) {
+                        Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys([{
+                            name: 'parentGroup',
+                            type: 'groupnameNotExisting'
+                        }]);
+                    }
+                });
+            }
         }
     },
     users: {

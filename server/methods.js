@@ -1,4 +1,18 @@
 if (Meteor.isServer) {
+    checkRightsGroup = {
+      'isLeader': function(email, groupId){
+          var group = Groups.findOne({_id: groupId});
+            console.log(group);
+          if(group.leader === email)
+              return true;
+
+          this.checkUserRight("", userId);
+      }
+    };
+
+    if(typeof checkRights !== 'undefined')
+        _.merge(checkRights, checkRightsGroup);
+
     Meteor.methods({
         /*
          * Adds a user to a group
@@ -10,37 +24,39 @@ if (Meteor.isServer) {
          *      false = user was not added
          */
         'addUserToGroup': function (userId, useremail, groupId) {
-            if (!userId || !useremail)
-                throw new Meteor.error("groups", "You have to specify userid and useremail");
-            if (!groupId)
-                throw new Meteor.error("groups", "You did not specify a groupId");
+            if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
+                if (!userId || !useremail)
+                    throw new Meteor.error("groups", "You have to specify userid and useremail");
+                if (!groupId)
+                    throw new Meteor.error("groups", "You did not specify a groupId");
 
-            var identifier;
-            if (useremail)
-                identifier = {'emails.0.address': useremail};
-            if (userId)
-                identifier = {_id: userId};
-            var user = Meteor.users.update(identifier,
-                {
-                    $addToSet: {
-                        'profile.groups':  {
-                            id: groupId
+                var identifier;
+                if (useremail)
+                    identifier = {'emails.0.address': useremail};
+                if (userId)
+                    identifier = {_id: userId};
+                var user = Meteor.users.update(identifier,
+                    {
+                        $addToSet: {
+                            'profile.groups': {
+                                id: groupId
+                            }
+                        }
+                    });
+
+                Groups.update({
+                        _id: groupId
+                    }, {
+                        $addToSet: {
+                            users: {
+                                id: userId
+                            }
                         }
                     }
-                });
-
-            Groups.update({
-                    _id: groupId
-                }, {
-                    $addToSet: {
-                        users: {
-                            id: userId
-                        }
-                    }
-                }
-            );
-            if (user == 1)
-                return true;
+                );
+                if (user == 1)
+                    return true;
+            }
         },
         /*
          * removes a user from a group
@@ -52,39 +68,41 @@ if (Meteor.isServer) {
          *      error = removing user from group failed
          */
         'removeUserFromGroup': function (userId, email, groupId) {
-            if (groupId) {
-                var update = {
-                    $pull: {
-                        'profile.groups':{
-                          id: groupId
-                        }
-                    }
-                };
-                var user;
-
-                if (userId != "" && userId != undefined) {
-                    user = Meteor.users.update({_id: userId}, update);
-                } else if (email != "" && userId != undefined) {
-                    user = Meteor.users.update({'emails.0.address': email}, update);
-                }
-
-                Groups.update({
-                        _id: groupId
-                    }, {
+            if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
+                if (groupId) {
+                    var update = {
                         $pull: {
-                            users: {
-                                id: userId
+                            'profile.groups': {
+                                id: groupId
                             }
                         }
-                    }
-                );
+                    };
+                    var user;
 
-                if (!user)
-                    throw new Meteor.error("user", "Found no user!");
-            } else {
-                throw new Meteor.error("group", "Found no group with specified groupid!");
+                    if (userId != "" && userId != undefined) {
+                        user = Meteor.users.update({_id: userId}, update);
+                    } else if (email != "" && userId != undefined) {
+                        user = Meteor.users.update({'emails.0.address': email}, update);
+                    }
+
+                    Groups.update({
+                            _id: groupId
+                        }, {
+                            $pull: {
+                                users: {
+                                    id: userId
+                                }
+                            }
+                        }
+                    );
+
+                    if (!user)
+                        throw new Meteor.error("user", "Found no user!");
+                } else {
+                    throw new Meteor.error("group", "Found no group with specified groupid!");
+                }
+                return true;
             }
-            return true;
         },
 
         /*
@@ -110,33 +128,36 @@ if (Meteor.isServer) {
          *      error = creating group failed
          */
         createGroup: function (doc, mod, documentId) {
+
             //TODO check if project exists
-            var parentId = "";
+            if(checkRights.checkUserRight("",Meteor.userId())) {
+                var parentId = "";
 
-            var parentGroup = Groups.findOne({
-                groupname: doc.parentGroup
-            });
-
-            if(typeof parentGroup !== "undefined")
-                parentId = parentGroup._id;
-
-            if (doc.groupname) {
-                var group = Groups.insert({
-                    groupname: doc.groupname,
-                    parentGroup: parentId,
-                    leader: doc.leader,
-                    projects: doc.projects,
-                    agency: doc.agency,
-                    users: doc.users
+                var parentGroup = Groups.findOne({
+                    groupname: doc.parentGroup
                 });
-                if (!group)
-                    throw new Meteor.error("group", "Create group failed!");
-            } else {
-                if (name === "")
-                    throw new Meteor.error("group", "Name was not specified!");
-            }
 
-            return true;
+                if (typeof parentGroup !== "undefined")
+                    parentId = parentGroup._id;
+
+                if (doc.groupname) {
+                    var group = Groups.insert({
+                        groupname: doc.groupname,
+                        parentGroup: parentId,
+                        leader: doc.leader,
+                        projects: doc.projects,
+                        agency: doc.agency,
+                        users: doc.users
+                    });
+                    if (!group)
+                        throw new Meteor.error("group", "Create group failed!");
+                } else {
+                    if (name === "")
+                        throw new Meteor.error("group", "Name was not specified!");
+                }
+
+                return true;
+            }
         },
         /*
          * updates a group (autoform method call)
@@ -147,7 +168,7 @@ if (Meteor.isServer) {
          */
         updateGroup: function (doc, mod, documentId) {
             //TODO check rights
-            if (true) {
+            if(checkRights.isLeader(Meteor.user().emails[0].address, documentId)) {
                 var parentId = "";
                 var parentGroup = Groups.findOne({
                     groupname: doc.parentGroup
@@ -172,8 +193,6 @@ if (Meteor.isServer) {
                     throw new Meteor.Error("group", "updating the group failed");
 
                 return true;
-            } else {
-                throw new Meteor.Error("group", "You have no rights to edit a group");
             }
         },
         /*
@@ -185,17 +204,19 @@ if (Meteor.isServer) {
          *      error = assign subgroup failed
          */
         assignSubGroup: function (groupId, parentGroupId) {
-            if (groupId && parentGroupId) {
-                Groups.update({_id: groupId}, {
-                    $set: {
-                        parentGroup: parentGroupId
-                    }
-                });
-            } else {
-                if (parentGroupId === "")
-                    throw new Meteor.error("group", "Parent group id was not specified!");
-                if (groupId === "")
-                    throw new Meteor.Error("group", "Group id was not specified");
+            if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
+                if (groupId && parentGroupId) {
+                    Groups.update({_id: groupId}, {
+                        $set: {
+                            parentGroup: parentGroupId
+                        }
+                    });
+                } else {
+                    if (parentGroupId === "")
+                        throw new Meteor.error("group", "Parent group id was not specified!");
+                    if (groupId === "")
+                        throw new Meteor.Error("group", "Group id was not specified");
+                }
             }
         },
         /*
@@ -207,17 +228,19 @@ if (Meteor.isServer) {
          *      error = remove subgroup failed
          */
         removeSubGroup: function (groupId, parentGroupId) {
-            if (groupId && parentGroupId) {
-                Groups.update({_id: grouId}, {
-                    $set: {
-                        parentGroup: null
-                    }
-                });
-            } else {
-                if (parentGroupId === "")
-                    throw new Meteor.error("group", "Parent group id was not specified!");
-                if (groupId === "")
-                    throw new Meteor.Error("group", "Group id was not specified");
+            if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
+                if (groupId && parentGroupId) {
+                    Groups.update({_id: grouId}, {
+                        $set: {
+                            parentGroup: null
+                        }
+                    });
+                } else {
+                    if (parentGroupId === "")
+                        throw new Meteor.error("group", "Parent group id was not specified!");
+                    if (groupId === "")
+                        throw new Meteor.Error("group", "Group id was not specified");
+                }
             }
         },
         /*
@@ -228,30 +251,32 @@ if (Meteor.isServer) {
          *      error = removing group failed
          */
         removeGroup: function (groupId) {
-            if (groupId) {
-                var users = Groups.findOne({_id:groupId}).users;
-                var group = Groups.remove({_id: groupId});
-                //Find children and remove parentId
-                var children = Groups.update({parentGroup:groupId},{
-                    $set:{parentGroup: null}
-                });
-
-                _.each(users, function(user){
-                    Meteor.users.update(
-                        {
-                            _id:user.id
-                        },{
-                        $pull: {
-                            'profile.groups': {
-                                id:groupId
-                            }
-                        }
+            if (checkRights.checkUserRight("", Meteor.userId())) {
+                if (groupId) {
+                    var users = Groups.findOne({_id: groupId}).users;
+                    var group = Groups.remove({_id: groupId});
+                    //Find children and remove parentId
+                    var children = Groups.update({parentGroup: groupId}, {
+                        $set: {parentGroup: null}
                     });
-                });
 
-                return true;
-            } else {
-                throw new Meteor.error("groups", "No group id was specified while removing group");
+                    _.each(users, function (user) {
+                        Meteor.users.update(
+                            {
+                                _id: user.id
+                            }, {
+                                $pull: {
+                                    'profile.groups': {
+                                        id: groupId
+                                    }
+                                }
+                            });
+                    });
+
+                    return true;
+                } else {
+                    throw new Meteor.error("groups", "No group id was specified while removing group");
+                }
             }
         }
     });
