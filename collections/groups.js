@@ -2,32 +2,37 @@ Groups = new Mongo.Collection('groups');
 
 SimpleSchema.messages({
     "groupnameExisting": "Groupname already exists",
-    "groupnameNotExisting": "Group does not exist"
+    "groupnameNotExisting": "Group does not exist",
+    "parentGroupNotSelf": "Parent Group can not be a group itself"
 });
 SchemaPlain.group = {
     groupname: {
         type: String,
         label: "Group name",
-        unique:true,
-        custom: function () {
+        unique: true,
+        custom: function() {
             //TODO testing?
             if (Meteor.isClient) {
-                var groupId = Router.current().getParams().groupId;
-                if (groupId)
-                    var currentGroupname = Groups.findOne({_id: groupId}).groupName;
-            }
-            if (currentGroupname != this.value || !currentGroupname) {
-                if (Meteor.isClient && this.isSet) {
-                    Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
-                        if (result === true) {
-                            var invalidKeys = [{
-                                name: 'groupname',
-                                type: 'groupnameExisting'
-                            }];
-                            Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys(invalidKeys);
-                            Groups.simpleSchema().namedContext("editGroupForm").addInvalidKeys(invalidKeys);
-                        }
-                    });
+                var groupId = Router.current().params.groupId;
+                var currentGroupname = null;
+                if (groupId) {
+                    currentGroupname = Groups.findOne({
+                        _id: groupId
+                    }).groupname;
+                }
+                if (currentGroupname !== this.value && currentGroupname !== null) {
+                    if (Meteor.isClient && this.isSet) {
+                        Meteor.call("checkGroupnameExisting", this.value, function(error, result) {
+                            if (result === true) {
+                                var invalidKeys = [{
+                                    name: 'groupname',
+                                    type: 'groupnameExisting'
+                                }];
+                                Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys(invalidKeys);
+                                Groups.simpleSchema().namedContext("editGroupForm").addInvalidKeys(invalidKeys);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -36,12 +41,12 @@ SchemaPlain.group = {
         type: String,
         label: "Leader",
         optional: true,
-        custom: function () {
-            if(Meteor.isClient){
+        custom: function() {
+            if (Meteor.isClient) {
                 var user = Meteor.users.findOne({
                     'emails.address': this.value
                 });
-                if(user){
+                if (user) {
                     return;
                 }
                 LeaderSearch.search(this.value);
@@ -52,27 +57,31 @@ SchemaPlain.group = {
         type: String,
         label: "ParentGroup",
         optional: true,
-        custom: function () {
-            if(Meteor.isClient){
+        custom: function() {
+            if (this.value === this.field('groupname').value)
+                return 'parentGroupNotSelf';
+
+            if (Meteor.isClient) {
                 var group = Groups.findOne({
                     groupname: this.value
                 });
-                if(group){
+                if (group) {
                     return;
                 }
                 SubGroupSearch.search(this.value);
-            }
-
-            Meteor.call("checkGroupnameExisting", this.value, function (error, result) {
-                if (result !== true) {
-                    var invalidKeys = [{
-                        name: 'parentGroup',
-                        type: 'groupnameNotExisting'
-                    }];
-                    Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys();
-                    Groups.simpleSchema().namedContext("editGroupForm").addInvalidKeys();
+                if (this.value !== "" && typeof this.value !== 'undefined') {
+                    Meteor.call("checkGroupnameExisting", this.value, function(error, result) {
+                        if (result !== true) {
+                            var invalidKeys = [{
+                                name: 'parentGroup',
+                                type: 'groupnameNotExisting'
+                            }];
+                            Groups.simpleSchema().namedContext("addGroupForm").addInvalidKeys();
+                            Groups.simpleSchema().namedContext("editGroupForm").addInvalidKeys();
+                        }
+                    });
                 }
-            });
+            }
         }
     },
     users: {
@@ -86,7 +95,7 @@ SchemaPlain.group = {
     }
 };
 
-Meteor.startup(function(){
+Meteor.startup(function() {
     Schema.group = new SimpleSchema(SchemaPlain.group);
     Groups.attachSchema(Schema.group);
 
