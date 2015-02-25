@@ -2,13 +2,14 @@ Groups = new Mongo.Collection('groups');
 
 SimpleSchema.messages({
     "groupnameExisting": "Groupname already exists",
-    "groupnameNotExisting": "Group does not exist"
+    "groupnameNotExisting": "Group does not exist",
+    "parentGroupNotSelf": "Parent Group can not be a group itself"
 });
 SchemaPlain.group = {
     groupname: {
         type: String,
         label: "Group name",
-        unique:true,
+        unique: true,
         custom: function () {
             //TODO testing?
             if (Meteor.isClient) {
@@ -35,11 +36,11 @@ SchemaPlain.group = {
         label: "Leader",
         optional: true,
         custom: function () {
-            if(Meteor.isClient){
+            if (Meteor.isClient) {
                 var user = Meteor.users.findOne({
                     'emails.address': this.value
                 });
-                if(user){
+                if (user) {
                     return;
                 }
                 LeaderSearch.search(this.value);
@@ -51,6 +52,9 @@ SchemaPlain.group = {
         label: "ParentGroup",
         optional: true,
         custom: function () {
+            if (this.value === this.field('groupname').value)
+                return 'parentGroupNotSelf';
+
             if (Meteor.isClient) {
                 var group = Groups.findOne({
                     groupname: this.value
@@ -83,7 +87,7 @@ SchemaPlain.group = {
     }
 };
 
-Meteor.startup(function(){
+Meteor.startup(function () {
     Schema.group = new SimpleSchema(SchemaPlain.group);
     Groups.attachSchema(Schema.group);
 
