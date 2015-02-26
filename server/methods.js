@@ -2,11 +2,10 @@ if (Meteor.isServer) {
     checkRightsGroup = {
       'isLeader': function(email, groupId){
           var group = Groups.findOne({_id: groupId});
-            console.log(group);
           if(group.leader === email)
               return true;
 
-          this.checkUserRight("", Meteor.userId());
+          return this.checkUserRight("", Meteor.userId());
       }
     };
 

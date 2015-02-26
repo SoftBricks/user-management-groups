@@ -43,13 +43,16 @@ SchemaPlain.group = {
         optional: true,
         custom: function() {
             if (Meteor.isClient) {
-                var user = Meteor.users.findOne({
-                    'emails.address': this.value
-                });
-                if (user) {
-                    return;
+                if (this.value) {
+                    var user = Meteor.users.findOne({
+                        'emails.address': this.value
+                    });
+                    if (user) {
+                        LeaderSearch.search();
+                        return;
+                    }
+                    LeaderSearch.search(this.value);
                 }
-                LeaderSearch.search(this.value);
             }
         }
     },
@@ -66,6 +69,7 @@ SchemaPlain.group = {
                     groupname: this.value
                 });
                 if (group) {
+                    SubGroupSearch.search();
                     return;
                 }
                 SubGroupSearch.search(this.value);
