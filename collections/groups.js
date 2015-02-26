@@ -1,14 +1,11 @@
 Groups = new Mongo.Collection('groups');
 
-SimpleSchema.messages({
-    "groupnameExisting": "Groupname already exists",
-    "groupnameNotExisting": "Group does not exist",
-    "parentGroupNotSelf": "Parent Group can not be a group itself"
-});
 SchemaPlain.group = {
     groupname: {
         type: String,
-        label: "Group name",
+        label: function() {
+            return __("groupname");
+        },
         unique: true,
         custom: function() {
             //TODO testing?
@@ -39,7 +36,9 @@ SchemaPlain.group = {
     },
     leader: {
         type: String,
-        label: "Leader",
+        label: function() {
+            return __("leader");
+        },
         optional: true,
         custom: function() {
             if (Meteor.isClient) {
@@ -58,7 +57,9 @@ SchemaPlain.group = {
     },
     parentGroup: {
         type: String,
-        label: "ParentGroup",
+        label: function() {
+            return __("parentGroup");
+        },
         optional: true,
         custom: function() {
             if (this.value === this.field('groupname').value)
@@ -90,7 +91,9 @@ SchemaPlain.group = {
     },
     users: {
         type: [Object],
-        label: "Users in group",
+        label: function() {
+            return __("users");
+        },
         optional: true
     },
     'users.$.id': {
@@ -111,5 +114,11 @@ if (Meteor.isServer) {
     });
     Groups._ensureIndex({
         'parentGroup': 1
+    });
+    Groups._ensureIndex({
+        'leader': 1
+    });
+    Groups._ensureIndex({
+        'users': 1
     });
 }
