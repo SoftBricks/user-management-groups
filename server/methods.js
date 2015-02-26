@@ -24,6 +24,7 @@ if (Meteor.isServer) {
          */
         'addUserToGroup': function (userId, useremail, groupId) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
+
                 if (!userId || !useremail)
                     throw new Meteor.error("groups", "You have to specify userid and useremail");
                 if (!groupId)
@@ -138,12 +139,14 @@ if (Meteor.isServer) {
 
                 if (typeof parentGroup !== "undefined")
                     parentId = parentGroup._id;
+                var leaderId = null;
+                leaderId = Meteor.users.findOne({'emails.0.address': doc.leader});
 
                 if (doc.groupname) {
                     var group = Groups.insert({
                         groupname: doc.groupname,
                         parentGroup: parentId,
-                        leader: doc.leader,
+                        leader: leaderId._id,
                         projects: doc.projects,
                         agency: doc.agency,
                         users: doc.users
@@ -177,13 +180,16 @@ if (Meteor.isServer) {
                 if(typeof parentGroup !== "undefined")
                     parentId = parentGroup._id;
 
+                var leaderId = null;
+                leaderId = Meteor.users.findOne({'emails.0.address': doc.leader});
+
                 var group = Groups.update({
                         _id: documentId
                     }, {
                         $set: {
                             groupname: doc.groupname,
                             parentGroup: parentId,
-                            leader: doc.leader,
+                            leader: leaderId._id,
                             projects: doc.projects,
                             agency: doc.agency,
                             users: doc.users
