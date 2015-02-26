@@ -34,7 +34,7 @@ Package.onUse(function(api) {
     'lib/templates/addGroup.js','lib/userSearch.js'],'client');
   api.addFiles(['server/searchLeader.js','server/searchSubGroup.js','server/userSearch.js'], 'server');
 
-  api.export(['Groups','GroupsPages', 'LeaderSearch', 'SubGroupSearch'], ['client', 'server']);
+  api.export(['Groups','GroupsPages', 'LeaderSearch', 'SubGroupSearch', 'UserSearch'], ['client', 'server']);
 
 });
 
