@@ -25,14 +25,10 @@ if (Meteor.isServer) {
         'addUserToGroup': function (userId, useremail, groupId) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
 
-                if (!userId || !useremail)
-                    throw new Meteor.error("groups", "You have to specify userid and useremail");
                 if (!groupId)
-                    throw new Meteor.error("groups", "You did not specify a groupId");
+                    throw new Meteor.Error("groups", "You did not specify a groupId");
 
                 var identifier;
-                if (useremail)
-                    identifier = {'emails.0.address': useremail};
                 if (userId)
                     identifier = {_id: userId};
                 var user = Meteor.users.update(identifier,
@@ -97,9 +93,9 @@ if (Meteor.isServer) {
                     );
 
                     if (!user)
-                        throw new Meteor.error("user", "Found no user!");
+                        throw new Meteor.Error("user", "Found no user!");
                 } else {
-                    throw new Meteor.error("group", "Found no group with specified groupid!");
+                    throw new Meteor.Error("group", "Found no group with specified groupid!");
                 }
                 return true;
             }
@@ -152,10 +148,10 @@ if (Meteor.isServer) {
                         users: doc.users
                     });
                     if (!group)
-                        throw new Meteor.error("group", "Create group failed!");
+                        throw new Meteor.Error("group", "Create group failed!");
                 } else {
                     if (name === "")
-                        throw new Meteor.error("group", "Name was not specified!");
+                        throw new Meteor.Error("group", "Name was not specified!");
                 }
 
                 return true;
@@ -220,7 +216,7 @@ if (Meteor.isServer) {
                     });
                 } else {
                     if (parentGroupId === "")
-                        throw new Meteor.error("group", "Parent group id was not specified!");
+                        throw new Meteor.Error("group", "Parent group id was not specified!");
                     if (groupId === "")
                         throw new Meteor.Error("group", "Group id was not specified");
                 }
@@ -244,7 +240,7 @@ if (Meteor.isServer) {
                     });
                 } else {
                     if (parentGroupId === "")
-                        throw new Meteor.error("group", "Parent group id was not specified!");
+                        throw new Meteor.Error("group", "Parent group id was not specified!");
                     if (groupId === "")
                         throw new Meteor.Error("group", "Group id was not specified");
                 }
@@ -282,7 +278,7 @@ if (Meteor.isServer) {
 
                     return true;
                 } else {
-                    throw new Meteor.error("groups", "No group id was specified while removing group");
+                    throw new Meteor.Error("groups", "No group id was specified while removing group");
                 }
             }
         }

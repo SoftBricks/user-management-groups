@@ -92,7 +92,7 @@ SchemaPlain.group = {
     users: {
         type: [Object],
         label: function() {
-            return __("users");
+            return __("members");
         },
         optional: true
     },
