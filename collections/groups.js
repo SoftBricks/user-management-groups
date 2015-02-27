@@ -41,16 +41,15 @@ SchemaPlain.group = {
         },
         optional: true,
         custom: function() {
+            var self = this;
             if (Meteor.isClient) {
-                if (this.value) {
-                    var user = Meteor.users.findOne({
-                        'emails.address': this.value
+                if (self.value) {
+                    Meteor.call('checkEmailExisting', self.value, function (error, result) {
+                        // if result and email NOT existing
+                        if(result === false){
+                            LeaderSearch.search(self.value);
+                        }
                     });
-                    if (user) {
-                        LeaderSearch.search();
-                        return;
-                    }
-                    LeaderSearch.search(this.value);
                 }
             }
         }

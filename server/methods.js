@@ -136,19 +136,25 @@ if (Meteor.isServer) {
                 if (typeof parentGroup !== "undefined")
                     parentId = parentGroup._id;
                 var leaderId = null;
-                leaderId = Meteor.users.findOne({'emails.0.address': doc.leader});
+                leader = Meteor.users.findOne({'emails.0.address': doc.leader});
+                if(leader){
+                  leaderId = leader._id;
+                }
 
                 if (doc.groupname) {
                     var group = Groups.insert({
                         groupname: doc.groupname,
                         parentGroup: parentId,
-                        leader: leaderId._id,
+                        leader: leaderId,
                         projects: doc.projects,
                         agency: doc.agency,
                         users: doc.users
                     });
                     if (!group)
                         throw new Meteor.Error("group", "Create group failed!");
+
+                    if(leaderId)
+                      Meteor.call('addUserToGroup', leaderId, null, group);
                 } else {
                     if (name === "")
                         throw new Meteor.Error("group", "Name was not specified!");
@@ -177,7 +183,10 @@ if (Meteor.isServer) {
                     parentId = parentGroup._id;
 
                 var leaderId = null;
-                leaderId = Meteor.users.findOne({'emails.0.address': doc.leader});
+                leader = Meteor.users.findOne({'emails.0.address': doc.leader});
+                if(leader){
+                  leaderId = leader._id;
+                }
 
                 var group = Groups.update({
                         _id: documentId
@@ -185,7 +194,7 @@ if (Meteor.isServer) {
                         $set: {
                             groupname: doc.groupname,
                             parentGroup: parentId,
-                            leader: leaderId._id,
+                            leader: leaderId,
                             projects: doc.projects,
                             agency: doc.agency,
                             users: doc.users
@@ -194,6 +203,9 @@ if (Meteor.isServer) {
                 );
                 if (group != 1)
                     throw new Meteor.Error("group", "updating the group failed");
+
+                if(leaderId)
+                    Meteor.call('addUserToGroup', leaderId, null, documentId);
 
                 return true;
             }
