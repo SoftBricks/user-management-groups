@@ -177,7 +177,7 @@ if (Meteor.isServer) {
                     parentId = parentGroup._id;
 
                 var leaderId = null;
-                leaderId = Meteor.users.findOne({_id: doc.leader});
+                leaderId = Meteor.users.findOne({'emails.0.address': doc.leader});
 
                 var group = Groups.update({
                         _id: documentId
