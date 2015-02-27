@@ -48,6 +48,8 @@ SchemaPlain.group = {
                         // if result and email NOT existing
                         if(result === false){
                             LeaderSearch.search(self.value);
+                        }else{
+                            LeaderSearch.search();
                         }
                     });
                 }
