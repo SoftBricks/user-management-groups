@@ -103,6 +103,7 @@ SchemaPlain.group = {
     }
 };
 
+Schema = {};
 Meteor.startup(function() {
     Schema.group = new SimpleSchema(SchemaPlain.group);
     Groups.attachSchema(Schema.group);
