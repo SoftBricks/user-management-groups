@@ -10,7 +10,7 @@ publishGroups = function(context) {
         var user = Meteor.users.findOne({
             _id: context.userId
         });
-        if (user.profile.admin === true || user.profile.superAdmin === true) {
+        if (Roles.userIsInRole(context.userId, ['admin', 'superAdmin'])) {
             return Groups.find();
         } else {
             return Groups.find({
