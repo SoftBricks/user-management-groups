@@ -309,18 +309,22 @@ if (Meteor.isServer) {
          *      error = error
          */
         addUserRoleInGroup: function(groupId, userId, role){
-            if(typeof groupId !== 'undefined'
-                && typeof userId !== 'undefined'
-                && typeof role !== 'undefined'){
-                var roleExists = Meteor.roles.findOne({name:role, groupId: groupId});
-                if(!roleExists)
-                    throw new Meteor.Error("GroupUserRoles", "The role does not exist");
+            if(Roles.userIsInGroupRole(Meteor.userId(),'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
+                if (typeof groupId !== 'undefined'
+                    && typeof userId !== 'undefined'
+                    && typeof role !== 'undefined') {
+                    var roleExists = Meteor.roles.findOne({name: role, groupId: groupId});
+                    if (!roleExists)
+                        throw new Meteor.Error("GroupUserRoles", "The role does not exist");
 
-                Groups.update({_id: groupId, 'users.id': userId},{
-                    $addToSet: {
-                        'users.$.roles':role
-                    }
-                });
+                    Groups.update({_id: groupId, 'users.id': userId}, {
+                        $addToSet: {
+                            'users.$.roles': role
+                        }
+                    });
+                }
+            }else{
+                throw new Meteor.error("addUserRoleInGroup", "You are not allowed to add User Roles in this Group");
             }
         },
         /*
@@ -333,18 +337,22 @@ if (Meteor.isServer) {
          *      error = error
          */
         deleteUserRoleInGroup: function(groupId, userId, role){
-            if(typeof groupId !== 'undefined'
-                && typeof userId !== 'undefined'
-                && typeof role !== 'undefined'){
-                var roleExists = Meteor.roles.findOne({name:role, groupId: groupId});
-                if(!roleExists)
-                    throw new Meteor.Error("GroupUserRoles", "The role does not exist");
+            if(Roles.userIsInGroupRole(Meteor.userId(),'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
+                if (typeof groupId !== 'undefined'
+                    && typeof userId !== 'undefined'
+                    && typeof role !== 'undefined') {
+                    var roleExists = Meteor.roles.findOne({name: role, groupId: groupId});
+                    if (!roleExists)
+                        throw new Meteor.Error("GroupUserRoles", "The role does not exist");
 
-                Groups.update({_id: groupId, 'users.id': userId},{
-                    $pull: {
-                        'users.$.roles':role
-                    }
-                });
+                    Groups.update({_id: groupId, 'users.id': userId}, {
+                        $pull: {
+                            'users.$.roles': role
+                        }
+                    });
+                }
+            }else{
+                throw new Meteor.error("deleteUserRoleInGroup", "You are not allowed to delete User Roles in this Group");
             }
         }
     });
