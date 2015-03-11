@@ -269,7 +269,7 @@ if (Meteor.isServer) {
          *      error = removing group failed
          */
         removeGroup: function (groupId) {
-            if (checkRights.checkUserRight("", Meteor.userId())) {
+            if (Roles.userIsInRole(Meteor.userId(),['admin','superAdmin'])) {
                 if (groupId) {
                     var users = Groups.findOne({_id: groupId}).users;
                     var group = Groups.remove({_id: groupId});
@@ -290,6 +290,8 @@ if (Meteor.isServer) {
                                 }
                             });
                     });
+
+                    Meteor.roles.remove({groupId:groupId});
 
                     return true;
                 } else {
