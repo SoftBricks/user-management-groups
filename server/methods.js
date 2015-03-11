@@ -18,11 +18,12 @@ if (Meteor.isServer) {
          * @param String userId
          * @param String useremail
          * @param String groupId
+         * @param String roles -> role1,role2...
          * @return Boolean
          *      true = user was added
          *      false = user was not added
          */
-        'addUserToGroup': function (userId, useremail, groupId) {
+        'addUserToGroup': function (userId, useremail, groupId, roles) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
 
                 if (!groupId)
@@ -45,7 +46,8 @@ if (Meteor.isServer) {
                     }, {
                         $addToSet: {
                             users: {
-                                id: userId
+                                id: userId,
+                                roles:[roles]
                             }
                         }
                     }
@@ -292,6 +294,60 @@ if (Meteor.isServer) {
                 } else {
                     throw new Meteor.Error("groups", "No group id was specified while removing group");
                 }
+            }
+        },
+        /*
+         * add user role
+         * @param String groupId
+         * @param String userId
+         * @param String role
+         * @return Boolean
+         *      true = added role
+         *      error = error
+         */
+        addUserRoleInGroup: function(groupId, userId, role){
+            if(typeof groupId !== 'undefined'
+                && typeof userId !== 'undefined'
+                && typeof role !== 'undefined'){
+                var roleExists = Meteor.roles.findOne({name:role, groupId: groupId});
+                if(!roleExists)
+                    throw new Meteor.Error("GroupUserRoles", "The role does not exist");
+
+                Groups.update({_id: groupId},{
+                    users:{
+                        id:userId,
+                        $addToSet:{
+                            roles:role
+                        }
+                    }
+                });
+            }
+        },
+        /*
+         * add user role
+         * @param String groupId
+         * @param String userId
+         * @param String role
+         * @return Boolean
+         *      true = added role
+         *      error = error
+         */
+        deleteUserRoleInGroup: function(groupId, userId, role){
+            if(typeof groupId !== 'undefined'
+                && typeof userId !== 'undefined'
+                && typeof role !== 'undefined'){
+                var roleExists = Meteor.roles.findOne({name:role, groupId: groupId});
+                if(!roleExists)
+                    throw new Meteor.Error("GroupUserRoles", "The role does not exist");
+
+                Groups.update({_id: groupId},{
+                    users:{
+                        id:userId,
+                        $pull:{
+                            roles:role
+                        }
+                    }
+                });
             }
         }
     });

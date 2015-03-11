@@ -24,7 +24,7 @@ Package.onUse(function(api) {
   api.imply('stevezhu:lodash');
   api.use('softbricks:user-management@0.0.1');
 
-  api.addFiles(['lib/schemaGroup.js','collections/groups.js'], ['client','server']);
+  api.addFiles(['lib/schemaGroup.js','collections/groups.js','lib/utils.js'], ['client','server']);
   api.addFiles(['server/publications.js'], 'server');
   api.addFiles(['server/methods.js'], 'server');
   api.addFiles(['lib/searchLeader.js','lib/searchSubGroup.js','lib/templates/showGroups.js'], 'client');

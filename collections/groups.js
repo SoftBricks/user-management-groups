@@ -103,11 +103,9 @@ SchemaPlain.group = {
     }
 };
 
-Schema = {};
 Meteor.startup(function() {
-    Schema.group = new SimpleSchema(SchemaPlain.group);
-    Groups.attachSchema(Schema.group);
-
+    Schemas.group = new SimpleSchema(SchemaPlain.group);
+    Groups.attachSchema(Schemas.group);
 });
 
 if (Meteor.isServer) {
