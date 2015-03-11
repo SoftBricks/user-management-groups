@@ -5,7 +5,7 @@ if (Meteor.isServer) {
           if(group.leader === email)
               return true;
 
-          return this.checkUserRight("", Meteor.userId());
+          return Roles.userIsInRole(Meteor.userId(), ['admin','superAdmin']);
       }
     };
 
@@ -18,12 +18,13 @@ if (Meteor.isServer) {
          * @param String userId
          * @param String useremail
          * @param String groupId
-         * @param String roles -> role1,role2...
+         * @param Array roles
          * @return Boolean
          *      true = user was added
          *      false = user was not added
          */
         'addUserToGroup': function (userId, useremail, groupId, roles) {
+            var roles = roles || [];
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
 
                 if (!groupId)
@@ -47,7 +48,7 @@ if (Meteor.isServer) {
                         $addToSet: {
                             users: {
                                 id: userId,
-                                roles:[roles]
+                                roles:roles
                             }
                         }
                     }
@@ -313,12 +314,9 @@ if (Meteor.isServer) {
                 if(!roleExists)
                     throw new Meteor.Error("GroupUserRoles", "The role does not exist");
 
-                Groups.update({_id: groupId},{
-                    users:{
-                        id:userId,
-                        $addToSet:{
-                            roles:role
-                        }
+                Groups.update({_id: groupId, 'users.id': userId},{
+                    $addToSet: {
+                        'users.$.roles':role
                     }
                 });
             }
@@ -340,12 +338,9 @@ if (Meteor.isServer) {
                 if(!roleExists)
                     throw new Meteor.Error("GroupUserRoles", "The role does not exist");
 
-                Groups.update({_id: groupId},{
-                    users:{
-                        id:userId,
-                        $pull:{
-                            roles:role
-                        }
+                Groups.update({_id: groupId, 'users.id': userId},{
+                    $pull: {
+                        'users.$.roles':role
                     }
                 });
             }
