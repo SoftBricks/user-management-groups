@@ -13,17 +13,15 @@ if (Meteor.isServer) {
         _.merge(checkRights, checkRightsGroup);
 
     Meteor.methods({
-        /*
-         * Adds a user to a group
+        /**
+         * Add a user to a group
          * @param String userId
-         * @param String useremail
          * @param String groupId
          * @param Array roles
          * @return Boolean
          *      true = user was added
-         *      false = user was not added
          */
-        'addUserToGroup': function (userId, useremail, groupId, roles) {
+        'addUserToGroup': function (userId, groupId, roles) {
             var roles = roles || [];
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
 
@@ -57,14 +55,13 @@ if (Meteor.isServer) {
                     return true;
             }
         },
-        /*
+        /**
          * removes a user from a group
          * @param String userId
          * @param String email
          * @param String groupId
          * @return Boolean
          *      true = removed user from group successfull
-         *      error = removing user from group failed
          */
         'removeUserFromGroup': function (userId, email, groupId) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
@@ -104,8 +101,8 @@ if (Meteor.isServer) {
             }
         },
 
-        /*
-        * checks if a given groupname is already existing in the database
+        /**
+        * checks if a given groupname already exists
         * @param String groupname
         * @return Boolean
         *      true = groupname is existing
@@ -119,12 +116,13 @@ if (Meteor.isServer) {
             return false;
         },
 
-        /*
+        /**
          * creates a group (autoform method call)
          * @param Object doc
+         * @param Object mod
+         * @param String documentId
          * @return Boolean
          *      true = created group successfull
-         *      error = creating group failed
          */
         createGroup: function (doc, mod, documentId) {
 
@@ -166,12 +164,13 @@ if (Meteor.isServer) {
                 return true;
             }
         },
-        /*
+        /**
          * updates a group (autoform method call)
          * @param Object doc
+         * @param Object mod
+         * @param String documentId
          * @return Boolean
          *      true = edit group successfull
-         *      error = edit group failed
          */
         updateGroup: function (doc, mod, documentId) {
             if(!Meteor.user()){
@@ -213,13 +212,12 @@ if (Meteor.isServer) {
                 return true;
             }
         },
-        /*
+        /**
          * assigns a sub group to a group
          * @param String groupId
          * @param String parentGroupId
          * @return Boolean
          *      true = assign subgroup successfull
-         *      error = assign subgroup failed
          */
         assignSubGroup: function (groupId, parentGroupId) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
@@ -237,13 +235,12 @@ if (Meteor.isServer) {
                 }
             }
         },
-        /*
+        /**
          * remove a sub group from a group
          * @param String groupId
          * @param String parentGroupId
          * @return Boolean
          *      true = removed subgroup successfull
-         *      error = remove subgroup failed
          */
         removeSubGroup: function (groupId, parentGroupId) {
             if(checkRights.isLeader(Meteor.user().emails[0].address, groupId)) {
@@ -261,12 +258,11 @@ if (Meteor.isServer) {
                 }
             }
         },
-        /*
+        /**
          * removes a group
          * @param String groupId
          * @return Boolean
          *      true = removed group successfull
-         *      error = removing group failed
          */
         removeGroup: function (groupId) {
             if (Roles.userIsInRole(Meteor.userId(),['admin','superAdmin'])) {
@@ -299,17 +295,16 @@ if (Meteor.isServer) {
                 }
             }
         },
-        /*
+        /**
          * add user role
          * @param String groupId
          * @param String userId
          * @param String role
          * @return Boolean
          *      true = added role
-         *      error = error
          */
         addUserRoleInGroup: function(groupId, userId, role){
-            if(Roles.userIsInGroupRole(Meteor.userId(),'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
+            if(Roles.userIsInGroupRole(Meteor.userId(), groupId, 'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
                 if (typeof groupId !== 'undefined'
                     && typeof userId !== 'undefined'
                     && typeof role !== 'undefined') {
@@ -327,17 +322,16 @@ if (Meteor.isServer) {
                 throw new Meteor.error("addUserRoleInGroup", "You are not allowed to add User Roles in this Group");
             }
         },
-        /*
+        /**
          * add user role
          * @param String groupId
          * @param String userId
          * @param String role
          * @return Boolean
          *      true = added role
-         *      error = error
          */
         deleteUserRoleInGroup: function(groupId, userId, role){
-            if(Roles.userIsInGroupRole(Meteor.userId(),'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
+            if(Roles.userIsInGroupRole(Meteor.userId(), groupId, 'admin') || Roles.userIsInRole(Meteor.userId(),['superAdmin','admin'])) {
                 if (typeof groupId !== 'undefined'
                     && typeof userId !== 'undefined'
                     && typeof role !== 'undefined') {
