@@ -155,7 +155,7 @@ if (Meteor.isServer) {
                         throw new Meteor.Error("group", "Create group failed!");
 
                     if(leaderId)
-                      Meteor.call('addUserToGroup', leaderId, null, group);
+                      Meteor.call('addUserToGroup', leaderId, group);
                 } else {
                     if (name === "")
                         throw new Meteor.Error("group", "Name was not specified!");
@@ -207,7 +207,7 @@ if (Meteor.isServer) {
                     throw new Meteor.Error("group", "updating the group failed");
 
                 if(leaderId)
-                    Meteor.call('addUserToGroup', leaderId, null, documentId);
+                    Meteor.call('addUserToGroup', leaderId, documentId);
 
                 return true;
             }
