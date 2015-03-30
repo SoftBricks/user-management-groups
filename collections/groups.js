@@ -1,6 +1,6 @@
 Groups = new Mongo.Collection('groups');
 
-SchemaPlain.group = {
+Group = {
     groupname: {
         type: String,
         label: function() {
@@ -104,8 +104,8 @@ SchemaPlain.group = {
 };
 
 Meteor.startup(function() {
-    Schemas.group = new SimpleSchema(SchemaPlain.group);
-    Groups.attachSchema(Schemas.group);
+    // Schema.Group = new SimpleSchema(SchemaPlain.group);
+    Groups.attachSchema(Group);
 });
 
 if (Meteor.isServer) {

@@ -13,6 +13,9 @@ Package.describe({
 Package.onUse(function(api) {
   api.versionsFrom('1.0.3.1');
 
+  api.use('softbricks:user-management@0.0.1');
+  api.imply('softbricks:user-management');
+
   api.use(['templating'], 'client');
   api.use(['mongo'], ['client', 'server']);
 
@@ -22,7 +25,8 @@ Package.onUse(function(api) {
   api.imply('aldeed:collection2');
   api.use('stevezhu:lodash@1.0.2');
   api.imply('stevezhu:lodash');
-  api.use('softbricks:user-management@0.0.1');
+  api.use('meteorhacks:search-source@1.2.0');
+  api.imply('meteorhacks:search-source');
 
   api.addFiles(['lib/schemaGroup.js','collections/groups.js','lib/utils.js'], ['client','server']);
   api.addFiles(['server/publications.js'], 'server');
