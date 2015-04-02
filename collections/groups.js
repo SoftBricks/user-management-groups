@@ -6,7 +6,6 @@ Group = {
         label: function() {
             return __("groupname");
         },
-        unique: true,
         custom: function() {
             //TODO testing?
             if (Meteor.isClient) {
