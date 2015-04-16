@@ -9,7 +9,7 @@ Group = {
         custom: function() {
             //TODO testing?
             if (Meteor.isClient) {
-                var groupId = Router.current().params.groupId;
+                var groupId =  FlowRouter.getParam("groupId");
                 var currentGroupname = null;
                 if (groupId) {
                     currentGroupname = Groups.findOne({

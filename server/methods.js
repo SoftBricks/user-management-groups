@@ -127,7 +127,7 @@ if (Meteor.isServer) {
         createGroup: function (doc, mod, documentId) {
 
             //TODO check if project exists
-            if(checkRights.checkUserRight("",Meteor.userId())) {
+            //if(checkRights.checkUserRight("",Meteor.userId())) {
                 var parentId = "";
 
                 var parentGroup = Groups.findOne({
@@ -162,7 +162,7 @@ if (Meteor.isServer) {
                 }
 
                 return true;
-            }
+            //}
         },
         /**
          * updates a group (autoform method call)
