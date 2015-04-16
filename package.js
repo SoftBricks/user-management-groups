@@ -23,7 +23,7 @@ Package.onUse(function(api) {
   api.imply('aldeed:simple-schema');
   api.use(['aldeed:collection2@2.3.2']);
   api.imply('aldeed:collection2');
-  api.use('stevezhu:lodash@1.0.2');
+  api.use('stevezhu:lodash@3.6.0');
   api.imply('stevezhu:lodash');
   api.use('meteorhacks:search-source@1.2.0');
   api.imply('meteorhacks:search-source');
