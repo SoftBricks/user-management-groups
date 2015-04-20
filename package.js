@@ -18,6 +18,8 @@ Package.onUse(function(api) {
 
   api.use(['templating'], 'client');
   api.use(['mongo'], ['client', 'server']);
+  api.use("meteorhacks:flow-router@1.4.1");
+  api.imply("meteorhacks:flow-router");
 
   api.use(['aldeed:simple-schema@1.3.0']);
   api.imply('aldeed:simple-schema');
