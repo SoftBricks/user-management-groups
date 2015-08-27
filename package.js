@@ -18,8 +18,9 @@ Package.onUse(function(api) {
 
   api.use(['templating'], 'client');
   api.use(['mongo'], ['client', 'server']);
-  api.use("meteorhacks:flow-router@1.4.1");
-  api.imply("meteorhacks:flow-router");
+  // api.use("meteorhacks:flow-router@1.4.1");
+  // api.imply("meteorhacks:flow-router");
+  api.use('ongoworks:security@1.2.0');
 
   api.use(['aldeed:simple-schema@1.3.0']);
   api.imply('aldeed:simple-schema');
@@ -37,6 +38,7 @@ Package.onUse(function(api) {
   api.addFiles(['lib/templates/groupListItem.js','lib/templates/showGroup.js','lib/templates/editGroup.js',
     'lib/templates/addGroup.js','lib/templates/showGroupMembers.js'],'client');
   api.addFiles(['server/searchLeader.js','server/searchSubGroup.js'], 'server');
+  api.addFiles(['server/security.js'], 'server');
 
   api.export(['Groups','GroupsPages', 'LeaderSearch', 'SubGroupSearch'], ['client', 'server']);
 
